@@ -16,7 +16,7 @@ public class Movie
 	private Long id;
 
 	@Column(name="year")
-	private Integer year;
+	private Long year;
 
 	@Column(name="title")
 	private String title;
@@ -34,11 +34,11 @@ public class Movie
 		return id;
 	}
 
-	public Integer getYear() {
+	public Long getYear() {
 		return year;
 	}
 
-	public void setYear(Integer year) {
+	public void setYear(Long year) {
 		this.year = year;
 	}
 

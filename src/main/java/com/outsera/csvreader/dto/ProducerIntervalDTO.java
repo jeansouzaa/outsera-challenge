@@ -4,7 +4,7 @@ public class ProducerIntervalDTO {
 
 	private String producer;
 
-	private Integer interval;
+	private Long interval;
 
 	private Long previousWin;
 
@@ -18,11 +18,11 @@ public class ProducerIntervalDTO {
 		this.producer = producer;
 	}
 
-	public Integer getInterval() {
+	public Long getInterval() {
 		return interval;
 	}
 
-	public void setInterval(Integer interval) {
+	public void setInterval(Long interval) {
 		this.interval = interval;
 	}
 

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.outsera.csvreader.dto.AwardIntervalResponseDTO;
 import com.outsera.csvreader.entity.Movie;
 import com.outsera.csvreader.service.impl.MovieService;
 
@@ -28,7 +29,7 @@ public class MovieController {
 	@GetMapping
 	@RequestMapping("orderedmovies")
 	public String orderedMovies() {
-		String movies = movieService.getOrderedMovies();
+		AwardIntervalResponseDTO movies = movieService.getOrderedMovies();
 		return "";
 	}
 }

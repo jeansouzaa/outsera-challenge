@@ -8,7 +8,7 @@ public class MovieFactory {
 		if(movie != null && !movie.isEmpty()) {
 			String[] movieParts = movie.split(";");
 			if(movieParts != null && movieParts.length > 0) {
-				Integer year = Integer.parseInt(movieParts[0]);
+				Long year = Long.parseLong(movieParts[0]);
 				String title = movieParts[1];
 				String studios = movieParts[2];
 				String producers = movieParts[3];
@@ -20,7 +20,7 @@ public class MovieFactory {
 		return null;
 	}
 
-	public static Movie build(Integer year, String title, String studios, String producers, Boolean winner) {
+	public static Movie build(Long year, String title, String studios, String producers, Boolean winner) {
 		Movie movie = new Movie();
 		movie.setYear(year);
 		movie.setTitle(title);
