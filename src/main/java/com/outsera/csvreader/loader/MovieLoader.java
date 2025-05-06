@@ -2,7 +2,6 @@ package com.outsera.csvreader.loader;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -14,19 +13,22 @@ import com.outsera.csvreader.service.impl.MovieService;
 @Component
 public class MovieLoader implements CommandLineRunner{
 
-	@Autowired
 	private MovieRepository movieRepository;
 
-	@Autowired
-	private MovieService service;
+	private MovieService movieService;
 
 	@Value("${csv.file.path:}")
 	private String csvPath;
 
+	public MovieLoader(MovieRepository movieRepository, MovieService movieService) {
+		this.movieRepository =  movieRepository;
+		this.movieService = movieService;
+	}
+
 	@Override
 	public void run(String... args) throws Exception {
 		try {
-			List<Movie> movies = service.readLineCSV(resolveCsvPath());
+			List<Movie> movies = movieService.readLineCSV(resolveCsvPath());
 			if(movies != null && !movies.isEmpty()) {
 				for(Movie movie : movies) {
 					movieRepository.save(movie);
@@ -34,7 +36,7 @@ public class MovieLoader implements CommandLineRunner{
 			}
 			
 		}catch(Exception exception) {
-			System.out.println(service.getMessage(exception));
+			System.out.println(movieService.getMessage(exception));
 			exception.printStackTrace();
 		}
 	}
