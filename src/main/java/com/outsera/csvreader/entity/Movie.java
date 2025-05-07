@@ -8,14 +8,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="DataMovie")
+@Table(name="data_movie")
 public class Movie 
 {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name="year")
+	@Column(name="release_year")
 	private Long year;
 
 	@Column(name="title")

@@ -4,14 +4,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
+
 import com.outsera.csvreader.CsvReaderApplication;
 import com.outsera.csvreader.dto.AwardIntervalResponseDTO;
 import com.outsera.csvreader.dto.ProducerIntervalDTO;
@@ -65,45 +63,56 @@ public class MovieService implements CSVReadLineService {
 	}
 
 	public AwardIntervalResponseDTO getOrderedMovies() {
-		List<Movie> moviesWinners = movieRepository.findByWinnerTrue();
-		Map<String, List<Long>> moviesByProducers = new HashMap<>();
-		for(Movie movie : moviesWinners) {
-			String producers = movie.getProducers();
-			if(movie.getProducers().contains("and")) {
-				producers = producers.replace("and", ",");
-			}
-			String[] producersSeparated = producers.split(",");
-			for(int count = 0; count < producersSeparated.length; count++) {
-				String producer = producersSeparated[count].trim();
-				if(moviesByProducers.containsKey(producer)) {
-					moviesByProducers.get(producer).add(movie.getYear());
-				}else {
-					moviesByProducers.put(producer, new ArrayList<Long>(List.of(movie.getYear())));
-				}
-			}
-			moviesByProducers.entrySet().forEach(key ->{
-				String producerKey = key.getKey();
-				Long previousWin = 0L;
-				Long followingWin = 0L;
-				Long interval = 0L;
+	    List<Movie> moviesWinners = movieRepository.findByWinnerTrue();
+	    Map<String, List<Long>> producersWins = separeProducers(moviesWinners);
 
-				List<Long> years = key.getValue();
-				if(years != null) {
-					years.sort(Comparator.reverseOrder());
-					followingWin = years.get(0);
-					if(years.size() >= 2)
-					{
-						previousWin = years.get(1);
-					}
-					if(previousWin > 0L) {
-						interval = followingWin - previousWin;
-					}
-					ProducerIntervalDTO producerIntervalDTO = ProducerIntervalFactory.build(followingWin, previousWin, null, producerKey);
-				}
-			});
-		}
-		
-		return null;
+	    List<ProducerIntervalDTO> allIntervals = sortProducersList(producersWins);
+
+	    long minInterval = allIntervals.stream().mapToLong(ProducerIntervalDTO::getInterval).min().orElse(0);
+	    long maxInterval = allIntervals.stream().mapToLong(ProducerIntervalDTO::getInterval).max().orElse(0);
+
+	    List<ProducerIntervalDTO> minList = allIntervals.stream()
+	        .filter(producerInterval -> producerInterval.getInterval() == minInterval)
+	        .toList();
+
+	    List<ProducerIntervalDTO> maxList = allIntervals.stream()
+	        .filter(producerInterval -> producerInterval.getInterval() == maxInterval)
+	        .toList();
+
+	    AwardIntervalResponseDTO response = new AwardIntervalResponseDTO();
+	    response.setMin(minList);
+	    response.setMax(maxList);
+	    return response;
 	}
 
+	private Map<String, List<Long>> separeProducers(List<Movie> moviesWinners) {
+		Map<String, List<Long>> producersWins = new HashMap<String, List<Long>>();
+		for (Movie movie : moviesWinners) {
+	        String[] producers = movie.getProducers().replace(" and ", ",").split(",");
+	        for (String rawProducer : producers) {
+	            String producer = rawProducer.trim();
+	            producersWins.computeIfAbsent(producer, p -> new ArrayList<>()).add(movie.getYear());
+	        }
+	    }
+		return producersWins;
+	}
+
+	private List<ProducerIntervalDTO> sortProducersList(Map<String, List<Long>> producersWins) {
+		List<ProducerIntervalDTO> producers = new ArrayList<>();
+		for (Map.Entry<String, List<Long>> entry : producersWins.entrySet()) {
+	        List<Long> years = entry.getValue();
+	        if (years.size() < 2) continue;
+
+	        years.sort(Long::compareTo);
+
+	        for (int i = 1; i < years.size(); i++) {
+	            long interval = years.get(i) - years.get(i - 1);
+	            ProducerIntervalDTO producerInterval = ProducerIntervalFactory.build(
+	                years.get(i), years.get(i - 1), interval, entry.getKey()
+	            );
+	            producers.add(producerInterval);
+	        }
+	    }
+		return producers;
+	}
 }
